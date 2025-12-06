@@ -1,60 +1,41 @@
-// =====================================================
-// Chat Widget – Premium Check & Messaging
-// =====================================================
+const API_URL = "https://chatbot-server-b1xy.onrender.com/api/chat";
 
-// Get client ID from URL
-const urlParams = new URLSearchParams(window.location.search);
-const client_id = urlParams.get("client");
+document.addEventListener("DOMContentLoaded", () => {
+    const widget = document.createElement("div");
+    widget.id = "chat-widget";
+    widget.innerHTML = `
+        <div id="chat-header">Chatbot</div>
+        <div id="chat-body"></div>
+        <input id="chat-input" placeholder="Frage mich etwas..." />
+        <button id="chat-send">Senden</button>
+    `;
+    document.body.appendChild(widget);
 
-// Elements
-const bubble = document.getElementById("chat-bubble");
-const chatWindow = document.getElementById("chat-window");
-const chatMessages = document.getElementById("chat-messages");
-const input = document.getElementById("chat-input");
-const sendBtn = document.getElementById("send-btn");
+    const body = document.getElementById("chat-body");
+    const input = document.getElementById("chat-input");
 
-// Open/close chat
-bubble.addEventListener("click", () => {
-    chatWindow.classList.toggle("open");
-});
+    async function sendMessage() {
+        const msg = input.value.trim();
+        if (!msg) return;
 
-// Send message
-sendBtn.addEventListener("click", sendMessage);
-input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
-});
+        body.innerHTML += `<div class="msg user">${msg}</div>`;
+        input.value = "";
 
-function addMessage(text, sender) {
-    const msg = document.createElement("div");
-    msg.className = sender === "user" ? "message-user" : "message-bot";
-    msg.textContent = text;
-    chatMessages.appendChild(msg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg })
+        });
 
-async function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
+        const data = await res.json();
+        const reply = data.reply || "Fehler 😢";
 
-    addMessage(text, "user");
-    input.value = "";
-
-    const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            message: text,
-            client_id: client_id
-        })
-    });
-
-    const data = await response.json();
-
-    // If payment required
-    if (data.upgrade) {
-        addMessage("⚠️ Upgrade erforderlich! 👉 " + data.upgrade_url, "bot");
-        return;
+        body.innerHTML += `<div class="msg bot">${reply}</div>`;
+        body.scrollTop = body.scrollHeight;
     }
 
-    addMessage(data.response, "bot");
-}
+    document.getElementById("chat-send").onclick = sendMessage;
+    input.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendMessage();
+    });
+});
