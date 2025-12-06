@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Upgrade</title>
+    <style>
+        body { background: #f2f2f7; font-family: Arial; text-align:center; padding-top:100px; }
+        .card { width: 380px; margin:auto; background:white; padding:30px; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.15); }
+        input, button { width:100%; padding:12px; margin-top:12px; border-radius:8px; border:1px solid #ddd; }
+        button { cursor:pointer; font-size:16px; }
+        #premium { background:#6366f1; color:white; border:none; }
+        #business { background:#16a34a; color:white; border:none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Upgrade deinen KI-Chatbot</h2>
+    <input id="email" placeholder="Deine E-Mail">
+
+    <button id="premium">⭐ Premium – 19,90€ / Monat</button>
+    <button id="business">🏢 Business – 49,90€ / Monat</button>
+</div>
+
+<script>
+function startCheckout(path) {
+    const email = document.getElementById("email").value;
+
+    fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+    })
+    .then(async (r) => {
+        const data = await r.json();
+        console.log("Antwort vom Server:", data);
+
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            alert("Fehler:\n" + JSON.stringify(data, null, 2));
+        }
+    })
+    .catch(err => {
+        alert("Netzwerkfehler: " + err.message);
+    });
+}
+
+document.getElementById("premium").onclick = () => startCheckout("/checkout/premium");
+document.getElementById("business").onclick = () => startCheckout("/checkout/business");
+</script>
+
+</body>
+</html>
