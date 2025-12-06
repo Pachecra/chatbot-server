@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Dein Kunden-Dashboard</title>
+    <style>
+        body {
+            background: #eef2ff;
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            padding-top: 100px;
+            margin:0;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            width: 500px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 { margin-bottom: 20px; }
+        .status {
+            background: #e0e7ff;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .premium { background: #d1fae5; color: #065f46; }
+        .business { background: #fee2e2; color: #991b1b; }
+        input { width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:12px; }
+        button { padding:10px 16px; border:none; border-radius:8px; background:#6366f1; color:white; cursor:pointer; }
+        a { text-decoration:none; color:#6366f1; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>👋 Dein Kunden-Dashboard</h1>
+
+        <input id="email" placeholder="Deine E-Mail">
+        <button id="check">Status prüfen</button>
+
+        <div id="statusBox" class="status">Noch kein Status geladen.</div>
+
+        <p>
+          💳 <a href="/upgrade.html">Paket wechseln / upgraden</a><br>
+          🏠 <a href="/index.html">Zur Startseite</a>
+        </p>
+    </div>
+
+    <script>
+      document.getElementById("check").onclick = () => {
+          const email = document.getElementById("email").value;
+          fetch("/api/status?email=" + encodeURIComponent(email))
+            .then(r => r.json())
+            .then(d => {
+                let box = document.getElementById("statusBox");
+                box.className = "status";
+                if (d.plan === "free") {
+                    box.innerText = "🔓 Kostenloser Zugang (free)";
+                } else if (d.plan === "premium") {
+                    box.classList.add("premium");
+                    box.innerText = "⭐ PREMIUM aktiv";
+                } else if (d.plan === "business") {
+                    box.classList.add("business");
+                    box.innerText = "🏢 BUSINESS aktiv";
+                } else {
+                    box.innerText = "Unbekannter Status. Evtl. noch keine Zahlung registriert.";
+                }
+            });
+      };
+    </script>
+
+</body>
+</html>
